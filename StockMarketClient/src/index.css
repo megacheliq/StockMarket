@@ -74,14 +74,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* .limited-form {
-  height: 100vh;
-  margin: 0 auto;
-  display: grid;
-  place-items: center;
-}
-
-.limited-form form, .limited-form form button {
-  width: 100%;
-} */

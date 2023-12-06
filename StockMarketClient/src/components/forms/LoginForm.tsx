@@ -10,16 +10,8 @@ import {
     FormControl,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from '@/components/ui/form'
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 
 const formSchema = z.object({
@@ -47,46 +39,44 @@ export function LoginForm() {
     });
 
     return (
-        <div className='h-[100vh] grid place-content-center'>
-            <Card className='w-[400px] mx-auto'>
-                <CardHeader>
-                    <CardTitle>Вход в аккаунт</CardTitle>
-                    <CardDescription>С возвращением!</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-                            <FormField
-                                control={form.control}
-                                name='email'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Почта</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder='Почта' {...field}/>
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name='password'
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Пароль</FormLabel>
-                                        <FormControl>
-                                            <Input type='password' placeholder='Пароль' {...field}/>
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type='submit' className='w-[100%]'>Войти</Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+        <div className='grid place-content-center'>
+            <div className="flex flex-col space-y-2 text-center mb-8">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Вход в аккаунт
+              </h1>
+              <p className="text-base text-muted-foreground">
+                Введите вашу почту и пароль для авторизации
+              </p>
+            </div>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8 w-[400px]'>
+                    <FormField
+                        control={form.control}
+                        name='email'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input placeholder='Почта' {...field}/>
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name='password'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input type='password' placeholder='Пароль' {...field}/>
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type='submit' className='w-[100%]'>Войти</Button>
+                </form>
+            </Form>
         </div>
     )
 }
