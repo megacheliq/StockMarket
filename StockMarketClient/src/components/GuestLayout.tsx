@@ -1,5 +1,6 @@
 import {Outlet, Navigate} from 'react-router-dom'
 import { useStateContext } from '../contexts/ContextProvider'
+import { ThemeProvider } from "@/components/theme-provider"
 
 export default function GuestLayout() {
     const {token} = useStateContext();
@@ -8,8 +9,8 @@ export default function GuestLayout() {
     }
 
     return (
-        <div>
+        <ThemeProvider storageKey="vite-ui-theme">
             <Outlet/>
-        </div>
+        </ThemeProvider>
     )
 }
