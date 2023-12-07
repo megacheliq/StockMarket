@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button'
 import {
@@ -77,6 +78,21 @@ export function LoginForm() {
                     <Button type='submit' className='w-[100%]'>Войти</Button>
                 </form>
             </Form>
+            <div className="relative mt-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-2 text-muted-foreground text-sm">
+                        Нет аккаунта?
+                    </span>
+                </div>              
+            </div>
+            <Link to='/signup'>
+                <Button variant="outline" type="button" className='mt-4 w-[100%]'>
+                    Регистрация
+                </Button>
+            </Link>
         </div>
     )
 }
