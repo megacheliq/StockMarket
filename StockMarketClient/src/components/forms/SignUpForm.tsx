@@ -16,27 +16,46 @@ import {
 import { Input } from '@/components/ui/input'
 
 const formSchema = z.object({
+    username: z.string({
+            invalid_type_error: 'Имя пользователя должно быть строкой',
+            })
+            .nonempty({ message: 'Поле не должно быть пустым' })     
+            .max(50, {message: 'Имя пользователя не должно быть больше 50 символов'}),
+            
     email: z.string({
-        invalid_type_error: 'Почта должна быть строкой',
-        })
-        .nonempty({ message: 'Поле не должно быть пустым' })
-        .email({message: 'Неверный формат почты'})
-        .max(50, {message: 'Почта не должна быть больше 50 символов'}),
+            invalid_type_error: 'Почта должна быть строкой',
+            })
+            .nonempty({ message: 'Поле не должно быть пустым' })
+            .email({message: 'Неверный формат почты'})
+            .max(50, {message: 'Почта не должна быть больше 50 символов'}),
 
     password: z.string({
+            invalid_type_error: 'Пароль должен быть строкой',
+            })
+            .nonempty({ message: 'Поле не должно быть пустым' })
+            .min(5, {message: 'Пароль не должен быть меньше 5 символов'})
+            .max(50, {message: 'Пароль не должен быть больше 50 символов'}),
+
+    passwordConfirm: z.string({
         invalid_type_error: 'Пароль должен быть строкой',
         })
         .nonempty({ message: 'Поле не должно быть пустым' })
         .min(5, {message: 'Пароль не должен быть меньше 5 символов'})
         .max(50, {message: 'Пароль не должен быть больше 50 символов'}),
 })
+.refine((data) => data.password === data.passwordConfirm, {
+    message: "Пароли должны совпадать",
+    path: ["passwordConfirm"],
+});
 
-export function LoginForm() {
+export function SignUpForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            username: '',
             email: '',
             password: '',
+            passwordConfirm: ''
         },
     });
 
@@ -44,14 +63,26 @@ export function LoginForm() {
         <div className='grid place-content-center'>
             <div className="flex flex-col space-y-2 text-center mb-8">
               <h1 className="text-3xl font-semibold tracking-tight">
-                Вход в аккаунт
+                Регистрация
               </h1>
               <p className="text-base text-muted-foreground">
-                Введите вашу почту и пароль для авторизации
+                Заполните все поля для регистрации аккаунта
               </p>
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8 w-[400px]'>
+                    <FormField
+                        control={form.control}
+                        name='username'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input placeholder='Имя пользователя' {...field}/>
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control}
                         name='email'
@@ -76,7 +107,19 @@ export function LoginForm() {
                             </FormItem>
                         )}
                     />
-                    <Button type='submit' className='w-[100%]'>Войти</Button>
+                    <FormField
+                        control={form.control}
+                        name='passwordConfirm'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input type='password' placeholder='Подтверждение пароля' {...field}/>
+                                </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type='submit' className='w-[100%]'>Зарегистрироваться</Button>
                 </form>
             </Form>
             <div className="relative mt-4">
@@ -85,13 +128,13 @@ export function LoginForm() {
                 </div>
                 <div className="relative flex justify-center"> 
                     <span className="bg-background px-2 text-muted-foreground text-sm">
-                        Нет аккаунта?
+                        Уже есть аккаунт?
                     </span>
                 </div>              
             </div>
-            <Link to='/signup'>
+            <Link to='/login'>
                 <Button variant="outline" type="button" className='mt-4 w-[100%]'>
-                    Регистрация
+                    Авторизация
                 </Button>
             </Link>
         </div>
