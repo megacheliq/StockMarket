@@ -1,9 +1,10 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react';
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,16 @@ import {
     FormItem,
     FormMessage,
 } from '@/components/ui/form'
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
 import { Input } from '@/components/ui/input'
+import axiosClient from '@/axios-client'
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
+
+import { useStateContext } from '@/contexts/ContextProvider'
 
 const formSchema = z.object({
     username: z.string({
@@ -58,6 +68,31 @@ export function SignUpForm() {
             passwordConfirm: ''
         },
     });
+
+    const [errors, setErrors] = useState(null)
+    const {setUser, setToken} = useStateContext()
+
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        const payload = {
+            username: values.username,
+            email: values.email,
+            password: values.password,
+            password_confirmation: values.passwordConfirm,
+        }
+
+        console.log(payload);
+        axiosClient.post('/signup', payload)
+        .then(({data}) => {
+            setUser(data.user);
+            setToken(data.token);
+        })
+        .catch(err => {
+            const response = err.response;
+            if (response && response.status === 422) {
+                setErrors(response.data.errors)
+            }
+        })
+    }
 
     return (
         <div className='grid place-content-center'>
@@ -119,6 +154,15 @@ export function SignUpForm() {
                             </FormItem>
                         )}
                     />
+                    {errors && 
+                    <Alert variant="destructive">
+                        <ExclamationTriangleIcon className="h-4 w-4" />
+                        <AlertTitle>Ошибка</AlertTitle>
+                        <AlertDescription>
+                            {Object.values(errors)[0] as string}
+                        </AlertDescription>
+                    </Alert>
+                    }
                     <Button type='submit' className='w-[100%]'>Зарегистрироваться</Button>
                 </form>
             </Form>
@@ -139,8 +183,4 @@ export function SignUpForm() {
             </Link>
         </div>
     )
-}
-
-function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
 }

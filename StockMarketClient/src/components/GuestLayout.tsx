@@ -1,7 +1,7 @@
 import {Outlet, Navigate} from 'react-router-dom'
 import { useStateContext } from '../contexts/ContextProvider'
 import { ThemeProvider } from "@/components/theme-provider"
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export default function GuestLayout() {
     const {token} = useStateContext();
@@ -21,7 +21,6 @@ export default function GuestLayout() {
                 </div>
                 <Outlet/>
             </div>
-            
         </ThemeProvider>
     )
 }

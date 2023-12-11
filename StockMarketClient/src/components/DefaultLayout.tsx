@@ -1,5 +1,6 @@
 import { useStateContext } from "../contexts/ContextProvider"
 import { Navigate, Outlet } from 'react-router-dom'
+import { ThemeProvider } from "./theme-provider";
 
 export default function DefaultLayout() {
     const {user, token} = useStateContext();
@@ -8,8 +9,9 @@ export default function DefaultLayout() {
         return <Navigate to='/login'/>
     }
     return (
-        <div>
+        <ThemeProvider>
+            {user?.username}
             <Outlet/>
-        </div>
+        </ThemeProvider>
     )
 }
