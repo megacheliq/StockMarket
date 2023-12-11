@@ -1,9 +1,10 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,16 @@ import {
     FormItem,
     FormMessage,
 } from '@/components/ui/form'
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
 import { Input } from '@/components/ui/input'
+import axiosClient from '@/axios-client'
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
+
+import { useStateContext } from '@/contexts/ContextProvider'
 
 const formSchema = z.object({
     email: z.string({
@@ -21,14 +31,13 @@ const formSchema = z.object({
         })
         .nonempty({ message: 'Поле не должно быть пустым' })
         .email({message: 'Неверный формат почты'})
-        .max(50, {message: 'Почта не должна быть больше 50 символов'}),
+        .max(50, {message: 'Почта не может быть больше 50 символов'}),
 
     password: z.string({
         invalid_type_error: 'Пароль должен быть строкой',
         })
         .nonempty({ message: 'Поле не должно быть пустым' })
-        .min(5, {message: 'Пароль не должен быть меньше 5 символов'})
-        .max(50, {message: 'Пароль не должен быть больше 50 символов'}),
+        .max(50, {message: 'Пароль не может быть больше 50 символов'}),
 })
 
 export function LoginForm() {
@@ -39,6 +48,28 @@ export function LoginForm() {
             password: '',
         },
     });
+
+    const [errors, setErrors] = useState(null)
+    const {setUser, setToken} = useStateContext()
+    
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        const payload = {
+            email: values.email,
+            password: values.password,
+        }
+
+        axiosClient.post('/login', payload)
+            .then(({ data }) => {
+            setUser(data.user);
+            setToken(data.token);
+            })
+            .catch((err) => {
+            const response = err.response;
+            if (response && response.status === 422) {
+                setErrors(response.data.errors);
+            }
+        });
+    }
 
     return (
         <div className='grid place-content-center'>
@@ -76,6 +107,15 @@ export function LoginForm() {
                             </FormItem>
                         )}
                     />
+                    {errors && 
+                        <Alert variant="destructive">
+                            <ExclamationTriangleIcon className="h-4 w-4" />
+                            <AlertTitle>Ошибка</AlertTitle>
+                            <AlertDescription>
+                                Почта или пароль неверны
+                            </AlertDescription>
+                        </Alert>
+                    }
                     <Button type='submit' className='w-[100%]'>Войти</Button>
                 </form>
             </Form>
@@ -96,8 +136,4 @@ export function LoginForm() {
             </Link>
         </div>
     )
-}
-
-function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
 }

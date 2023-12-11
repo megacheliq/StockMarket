@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react';
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { Link } from 'react-router-dom'
@@ -44,7 +44,16 @@ const formSchema = z.object({
             })
             .nonempty({ message: 'Поле не должно быть пустым' })
             .min(5, {message: 'Пароль не должен быть меньше 5 символов'})
-            .max(50, {message: 'Пароль не должен быть больше 50 символов'}),
+            .max(50, {message: 'Пароль не должен быть больше 50 символов'})
+            .refine((value) => /[a-zA-Z]/.test(value), {
+                message: "Пароль должен содержать хотя бы одну букву",
+            })
+            .refine((value) => /^(?=.*[A-Z])/.test(value), {
+                message: "Пароль должен содержать хотя бы одну заглавную букву",
+            })
+            .refine((value) => /[0-9]/.test(value), {
+                message: "Пароль должен содержать хотя бы одну цифру",
+            }),
 
     passwordConfirm: z.string({
         invalid_type_error: 'Пароль должен быть строкой',
@@ -80,7 +89,6 @@ export function SignUpForm() {
             password_confirmation: values.passwordConfirm,
         }
 
-        console.log(payload);
         axiosClient.post('/signup', payload)
         .then(({data}) => {
             setUser(data.user);
