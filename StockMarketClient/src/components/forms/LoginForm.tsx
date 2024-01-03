@@ -59,16 +59,17 @@ export function LoginForm() {
         }
 
         axiosClient.post('/login', payload)
-            .then(({ data }) => {
-            setUser(data.user);
-            setToken(data.token);
+            .then(({data}) => {
+                setUser(data.user);
+                setToken(data.token);
             })
-            .catch((err) => {
-            const response = err.response;
-            if (response && response.status === 422) {
-                setErrors(response.data.errors);
-            }
-        });
+            .catch(err => {
+                const response = err.response;
+                if (response && response.status === 422) {
+                    setErrors(response.data.errors);
+                    console.log(errors);
+                }
+            });
     }
 
     return (
@@ -107,14 +108,15 @@ export function LoginForm() {
                             </FormItem>
                         )}
                     />
+                    
                     {errors && 
-                        <Alert variant="destructive">
-                            <ExclamationTriangleIcon className="h-4 w-4" />
-                            <AlertTitle>Ошибка</AlertTitle>
-                            <AlertDescription>
-                                Почта или пароль неверны
-                            </AlertDescription>
-                        </Alert>
+                    <Alert variant="destructive">
+                        <ExclamationTriangleIcon className="h-4 w-4" />
+                        <AlertTitle>Ошибка</AlertTitle>
+                        <AlertDescription>
+                            {Object.values(errors)[0] as string}
+                        </AlertDescription>
+                    </Alert>
                     }
                     <Button type='submit' className='w-[100%]'>Войти</Button>
                 </form>

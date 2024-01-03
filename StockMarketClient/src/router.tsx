@@ -5,6 +5,7 @@ import GuestLayout from "./components/GuestLayout";
 import Login from "./views/Login";
 import SignUp from "./views/SignUp";
 import DashBoard from "./views/DashBoard";
+import StockList from "./components/pages/stocklist";
 
 const router = createBrowserRouter([
     {
@@ -17,7 +18,13 @@ const router = createBrowserRouter([
             },
             {
                 path: '/dashboard',
-                element: <DashBoard/>
+                element: <DashBoard/>,
+                children: [
+                    {
+                        path: '/dashboard/all',
+                        element: <StockList/>,
+                    }
+                ]
             }
         ]
     },
@@ -30,7 +37,7 @@ const router = createBrowserRouter([
                 element: <Login/>
             },
             {
-                path: 'signup',
+                path: '/signup',
                 element: <SignUp/>
             }
         ]

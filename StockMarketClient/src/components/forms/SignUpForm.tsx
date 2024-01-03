@@ -90,16 +90,17 @@ export function SignUpForm() {
         }
 
         axiosClient.post('/signup', payload)
-        .then(({data}) => {
-            setUser(data.user);
-            setToken(data.token);
-        })
-        .catch(err => {
-            const response = err.response;
-            if (response && response.status === 422) {
-                setErrors(response.data.errors)
-            }
-        })
+            .then(({data}) => {
+                setUser(data.user);
+                setToken(data.token);
+            })
+            .catch(err => {
+                const response = err.response;
+                if (response && response.status === 422) {
+                    setErrors(response.data.errors);
+                    console.log(errors);
+                }
+            });
     }
 
     return (
