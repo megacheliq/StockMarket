@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { columns } from "../stockstable/columns";
 import { DataTable } from "../stockstable/data-table";
+import axiosClient from '@/axios-client';
 
 interface Stock {
     symbol: string;
@@ -26,44 +27,23 @@ export default function StockList() {
 
     return (
         <>
-            <h2 className="text-3xl font-bold tracking-tight">Список акций</h2>
-            <DataTable columns={columns} data={data} />
+            <div className="w-full">
+                <h2 className="text-3xl font-bold tracking-tight ml-8">Список акций</h2>
+                <div className="p-8 pb-2">
+                    <DataTable columns={columns} data={data}/>  
+                </div>
+                          
+            </div>           
         </>
     );
 }
 
 async function getData(): Promise<Stock[]> {
-    return [
-        {
-            symbol: 'aaa',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        {
-            symbol: 'aab',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        {
-            symbol: 'aav',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        {
-            symbol: 'aac',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        {
-            symbol: 'aax',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        {
-            symbol: 'aas',
-            name: 'bbb',
-            ipo_date: 'dsfs123'
-        },
-        
-    ]
+    try {
+      const response = await axiosClient.get('/getStocks');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+    }
 }

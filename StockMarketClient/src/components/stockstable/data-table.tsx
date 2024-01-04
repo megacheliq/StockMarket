@@ -1,13 +1,17 @@
 "use-client"
+import * as React from "react"
 
 import {
     ColumnDef,
+    SortingState,
+    ColumnFiltersState,
+    getFilteredRowModel,
     flexRender,
     getCoreRowModel,
+    getSortedRowModel,
     getPaginationRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-
 import {
     Table,
     TableBody,
@@ -16,6 +20,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { useEffect } from "react"
+import { DataTablePagination } from "./pagination"
+import { Input } from "@/components/ui/input"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -26,15 +33,44 @@ export function DataTable<TData, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
+
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+        []
+    )
+
+    const [sorting, setSorting] = React.useState<SortingState>([])
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-    })
+        onColumnFiltersChange: setColumnFilters,
+        getFilteredRowModel: getFilteredRowModel(),
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),
+        state: {
+            columnFilters,
+            sorting
+        },
+    });
+
+    useEffect(() => {
+        table.setPageSize(15);
+    }, []);
 
     return (
         <div className="rounded-md border">
+            <div className="flex items-center py-4 ml-2">
+                <Input
+                    placeholder="Поиск"
+                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("name")?.setFilterValue(event.target.value)
+                    }
+                    className="max-w-sm"
+                />
+            </div>
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -77,6 +113,7 @@ export function DataTable<TData, TValue>({
                     )}
                 </TableBody>
             </Table>
+            <DataTablePagination table={table} />
         </div>
     )
 }
