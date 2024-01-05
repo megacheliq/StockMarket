@@ -6,6 +6,7 @@ import Login from "./views/Login";
 import SignUp from "./views/SignUp";
 import DashBoard from "./views/DashBoard";
 import StockList from "./components/pages/stocklist";
+import StockInfo from "./components/pages/stockinfo";
 
 const router = createBrowserRouter([
     {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
                     {
                         path: '/dashboard/all',
                         element: <StockList/>,
+                    },
+                    {
+                        path: '/dashboard/all/:symbol',
+                        element: <StockInfo/>
                     }
                 ]
             }

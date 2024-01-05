@@ -31,8 +31,7 @@ export default function StockList() {
                 <h2 className="text-3xl font-bold tracking-tight ml-8">Список акций</h2>
                 <div className="p-8 pb-2">
                     <DataTable columns={columns} data={data}/>  
-                </div>
-                          
+                </div>     
             </div>           
         </>
     );

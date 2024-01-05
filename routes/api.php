@@ -16,3 +16,5 @@ Route::post('/signup', [AuthController::class,'signup']);
 Route::post('/login', [AuthController::class,'login']);
 
 Route::get('/getStocks', [StockController::class,'getStocksList']);
+Route::get('/stockInfo/{symbol}', [StockController::class,'getStockFullInfo']);
+Route::get('/stockYesterdayInfo/{symbol}', [StockController::class,'getStockYesterdayDetail']);

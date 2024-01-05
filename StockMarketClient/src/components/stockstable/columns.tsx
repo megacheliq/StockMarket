@@ -1,5 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "./column-header";
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+
 
 export const columns: ColumnDef<Stock>[] = [
     {
@@ -20,4 +23,15 @@ export const columns: ColumnDef<Stock>[] = [
             <DataTableColumnHeader column={column} title="Первое размещение" />
         ),
     },
+    {
+        id: "actions",
+        cell: ({ row }) => {
+          const stock = row.original    
+          return (
+            <Link to={stock.symbol}>
+                <Button>Подробнее</Button>
+            </Link>
+          )
+        },
+      },
 ]
