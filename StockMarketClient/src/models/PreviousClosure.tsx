@@ -1,4 +1,4 @@
-class StockYesterday {
+class PreviousClosure {
     public status: string;
     public from: string;
     public symbol: string;

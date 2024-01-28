@@ -15,12 +15,17 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
+import { Chart } from '../chart';
+import { LoadingSpinner } from '../loading';
+import { PurchaseForm } from '../forms/PurchaseForm';
 
 export default function StockInfo() {
     const { symbol } = useParams();
     const [data, setData] = useState<Stock | null>();
-    const [yesterdayData, setYesterdayData] = useState<StockYesterday | null>(null);
+    const [previousClosure, setPreviousClosure] = useState<PreviousClosure | null>(null);
     const [errorStatus, setErrorStatus] = useState<number | null>(null);
+    const [infoErrorStatus, setInfoErrorStatus] = useState<number | null>(null);
+    const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
     useEffect(() => {
         async function getData(): Promise<Stock> {
@@ -44,12 +49,20 @@ export default function StockInfo() {
 
         fetchData();
 
-        axiosClient.get(`/stockYesterdayInfo/${symbol}`)
+        axiosClient.get(`/previousClosure/${symbol}`)
             .then(response => {
-                setYesterdayData(response.data);
+                setPreviousClosure(response.data);
             })
             .catch(error => {
                 setErrorStatus(error.response.status);
+            });
+
+        axiosClient.get(`/companyInfo/${symbol}`)
+            .then(response => {
+                setCompanyInfo(response.data);
+            })
+            .catch(error => {
+                setInfoErrorStatus(error.response.status)
             });
     }, []);
 
@@ -58,43 +71,76 @@ export default function StockInfo() {
             {data && (
                 <div className="w-full">
                     <h2 className="text-3xl font-bold tracking-tight ml-8">{data.name}</h2>
-                    <Tabs defaultValue='info' className='p-8'>
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value='info'>Информация</TabsTrigger>
-                            <TabsTrigger value='purchase'>Покупка</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value='info'>
+                        <div className='p-8'>
                             <Card>
                                 <CardHeader>
                                     <CardTitle className='text-2xl font-semibold'>Информация об акции</CardTitle>
-                                    <CardDescription className='text-xl font-normal'>{data.symbol}</CardDescription>
+                                    <CardDescription className='text-xl font-normal'>
+                                        {data.symbol}
+                                        {previousClosure && (
+                                            <p>Торги за {previousClosure.from}</p>
+                                        )}
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent className='space-y-2'>
-                                    {yesterdayData ? (
-                                        <div>
-                                            some data...
-                                        </div>
-                                    ) : (
-                                        errorStatus === 404 ? (
-                                            <div>
-                                                Ничего не найдено
+                                    {previousClosure || errorStatus ? (
+                                        errorStatus == null && previousClosure != null ? (
+                                            <div className="w-full h-80 m-auto">
+                                                <Chart previousClosure={previousClosure} />
                                             </div>
                                         ) : (
-                                            errorStatus === 429 && (
+                                            errorStatus === 404 ? (
                                                 <div>
-                                                    Слишком много запросов
+                                                    Ничего не найдено
                                                 </div>
+                                            ) : (
+                                                errorStatus === 429 && (
+                                                    <div>
+                                                        Слишком много запросов
+                                                    </div>
+                                                )
                                             )
                                         )
+                                    ) : (
+                                        <LoadingSpinner />
                                     )}
-
                                 </CardContent>
                                 <CardFooter>
-
+                                    {companyInfo || infoErrorStatus ? (
+                                        infoErrorStatus == null && companyInfo != null ? (
+                                            <div className='font-normal w-full h-auto flex justify-between'>
+                                                <p className='w-4/6'>{companyInfo.description}</p>
+                                                <div className='mr-10 text-lg w-3/12'>
+                                                    <p className='font-semibold'>CEO: {companyInfo.ceo}</p>
+                                                    <p className='font-semibold'>{companyInfo.city}, {companyInfo.address}</p>
+                                                    {previousClosure && (
+                                                        <div>
+                                                            <p className='font-semibold'>Текущая цена - ${previousClosure.close}</p>
+                                                            <PurchaseForm previousClosure={previousClosure} />
+                                                        </div> 
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                            : (
+                                                <div className='font-normal w-full h-auto flex justify-between'>
+                                                    <p className='w-4/6'>Информация по этой компании не найдена :(</p>
+                                                    <div className='mr-10 text-lg w-3/12'>
+                                                        {previousClosure && (
+                                                            <div>
+                                                                <p className='font-semibold'>Текущая цена - ${previousClosure.close}</p>
+                                                                <PurchaseForm previousClosure={previousClosure} />
+                                                            </div>                                                         
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                    ) : (
+                                        <LoadingSpinner />
+                                    )}
                                 </CardFooter>
                             </Card>
-                        </TabsContent>
-                    </Tabs>
+                        </div>
                 </div>
             )}
         </>

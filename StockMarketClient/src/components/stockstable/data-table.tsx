@@ -23,6 +23,7 @@ import {
 import { useEffect } from "react"
 import { DataTablePagination } from "./pagination"
 import { Input } from "@/components/ui/input"
+import { LoadingSpinner } from "../loading"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -107,7 +108,7 @@ export function DataTable<TData, TValue>({
                     ) : (
                         <TableRow>
                             <TableCell colSpan={columns.length} className="h-24 text-center">
-                                Нет данных
+                                <LoadingSpinner />
                             </TableCell>
                         </TableRow>
                     )}
