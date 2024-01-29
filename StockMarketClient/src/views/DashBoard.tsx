@@ -1,6 +1,6 @@
 import { UserNav } from "@/components/user-nav";
 import { MainNav } from "@/components/dashboard-main-nav";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 export default function DashBoard() {
     return (
@@ -17,6 +17,7 @@ export default function DashBoard() {
                 <div className="flex-1 space-y-4 p-8 pt-6">
                     <div className="flex items-center justify-between space-y-2">
                         <Outlet/>
+                        <Navigate to="all" />
                     </div>
                 </div>
             </div>

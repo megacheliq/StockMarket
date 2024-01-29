@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
@@ -21,6 +21,19 @@ import {
 import { Input } from '@/components/ui/input'
 import axiosClient from '@/axios-client'
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { toast } from "sonner"
+import { useStateContext } from '@/contexts/ContextProvider'
 
 interface PurchaseProps {
     previousClosure: PreviousClosure
@@ -29,7 +42,9 @@ interface PurchaseProps {
 const formSchema = z.object({
     amount: z.number({
         invalid_type_error: 'Количество должно быть числом',
-    }),
+        required_error: "Необходимо указать количество"
+    })
+        .positive({ message: 'Количество должно быть > 0' }),
 })
 
 export function PurchaseForm({ previousClosure }: PurchaseProps) {
@@ -41,16 +56,45 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
         },
     });
 
-    const [errors, setErrors] = useState(null)
-    
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        const payload = {
-            amount: values.amount
+    const [amount, setAmount] = useState(1);
+
+    const handleDecrease = () => {
+        if (amount > 1) {
+            setAmount(amount - 1);
         }
+    };
 
-        axiosClient.post('', payload)
-            .then(({data}) => {
+    const handleIncrease = () => {
+        if (amount < 100) {
+            setAmount(amount + 1);
+        }
+    };
 
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value;
+
+        if (inputValue === '') {
+            setAmount(1);
+        } else {
+            setAmount(Math.max(1, Math.min(100, parseInt(inputValue, 10))));
+        }
+    };
+
+    const [errors, setErrors] = useState(null)
+    const {user} = useStateContext()
+
+    function onSubmit() {
+        const payload = {
+            user_email: user.email,
+            symbol: previousClosure.symbol,
+            amount: amount,
+            single_stock_price: previousClosure.close.toFixed(2),
+            stock_from: previousClosure.from
+        }     
+
+        axiosClient.post('/buyStock', payload)
+            .then(({ data }) => {
+                toast(data.message);
             })
             .catch(err => {
                 const response = err.response;
@@ -58,21 +102,27 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
                     setErrors(response.data.errors);
                     console.log(errors);
                 }
-            });
+        });
     }
 
     return (
         <div>
             <p className='font-semibold mb-2 text-lg'>Покупка акций:</p>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 w-full'>
+            <Form  {...form}>
+                <div className='space-y-4 w-full'>
                     <FormField
                         control={form.control}
                         name='amount'
-                        render={({ field }) => (                           
+                        render={({ field }) => (
                             <FormItem>
-                                <FormControl>                                   
-                                    <Input id="amount" type='number' placeholder='Количество' {...field} />
+                                <FormControl>
+                                    <div className='flex justify-between gap-2'>
+                                        <Button className='w-1/8 text-xl pt-1' onClick={handleDecrease}>-</Button>
+                                        <Input id="amount" className='text-center align-middle' placeholder='Количество' {...field}
+                                            value={amount}
+                                            onChange={handleInputChange} />
+                                        <Button className='w-1/8 text-xl pt-1' onClick={handleIncrease}>+</Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -89,8 +139,27 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
                         </Alert>
                     }
 
-                    <Button type='submit' className='w-[100%]'>Купить</Button>
-                </form>
+                    <AlertDialog>
+                        <AlertDialogTrigger className='w-full mt-3'><Button className='w-full'>${(amount * previousClosure.close).toFixed(2)}</Button></AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Покупка {amount} акций {previousClosure.symbol} обойдется вам в ${(amount * previousClosure.close).toFixed(2)}
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className='w-2/4'>Нет</AlertDialogCancel>
+                                <AlertDialogAction className='w-2/4'>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} >
+                                        <Input type='hidden' value={amount} />
+                                        <Button type='submit' className='w-full'>Да</Button>
+                                    </form>
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             </Form>
         </div>
     )

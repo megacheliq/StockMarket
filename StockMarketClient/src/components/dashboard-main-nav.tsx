@@ -12,15 +12,15 @@ export function MainNav({
     >
       <Link
         to="all"
-        className="text-sm font-medium transition-colors hover:text-primary"
+        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
         Все акции
       </Link>
       <Link
-        to="#"
+        to="portfolio"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        Покупка
+        Портфель
       </Link>
       <Link
         to="#"

@@ -7,6 +7,7 @@ import SignUp from "./views/SignUp";
 import DashBoard from "./views/DashBoard";
 import StockList from "./components/pages/stocklist";
 import StockInfo from "./components/pages/stockinfo";
+import Portfolio from "./components/pages/portfolio";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
                     {
                         path: '/dashboard/all/:symbol',
                         element: <StockInfo/>
+                    },
+                    {
+                        path: '/dashboard/portfolio',
+                        element: <Portfolio/>
                     }
                 ]
             }

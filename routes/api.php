@@ -19,3 +19,6 @@ Route::get('/getStocks', [StockController::class,'getStocksList']);
 Route::get('/stockInfo/{symbol}', [StockController::class,'getStockFullInfo']);
 Route::get('/previousClosure/{symbol}', [StockController::class,'getPreviousClosure']);
 Route::get('/companyInfo/{symbol}', [StockController::class, 'getCompanyInfo']);
+Route::get('/getPortfolio/{email}', [StockController::class, 'getPortfolio']);
+
+Route::post('/buyStock', [StockController::class, 'buyStock']);

@@ -9,15 +9,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs"
 import { Chart } from '../chart';
 import { LoadingSpinner } from '../loading';
 import { PurchaseForm } from '../forms/PurchaseForm';
+import { Toaster } from "@/components/ui/sonner"
 
 export default function StockInfo() {
     const { symbol } = useParams();
@@ -51,7 +46,7 @@ export default function StockInfo() {
 
         axiosClient.get(`/previousClosure/${symbol}`)
             .then(response => {
-                setPreviousClosure(response.data);
+                setPreviousClosure(response.data);                         
             })
             .catch(error => {
                 setErrorStatus(error.response.status);
@@ -66,10 +61,25 @@ export default function StockInfo() {
             });
     }, []);
 
+    if (previousClosure) {
+        const localStorageDate = localStorage.getItem('SUCCESS_FETCH_DATE');
+        if (localStorageDate) {
+            const localStorageDateObject = localStorageDate ? new Date(localStorageDate) : null;
+            const closureDateObject = previousClosure?.from ? new Date(previousClosure?.from) : null;
+            
+            if (closureDateObject && localStorageDateObject && closureDateObject > localStorageDateObject) {
+                localStorage.setItem('SUCCESS_FETCH_DATE', previousClosure?.from);
+            }
+        } else {
+            localStorage.setItem('SUCCESS_FETCH_DATE', previousClosure?.from);
+        }                 
+    }   
+
     return (
         <>
             {data && (
                 <div className="w-full">
+                    <Toaster />
                     <h2 className="text-3xl font-bold tracking-tight ml-8">{data.name}</h2>
                         <div className='p-8'>
                             <Card>
@@ -115,7 +125,7 @@ export default function StockInfo() {
                                                     <p className='font-semibold'>{companyInfo.city}, {companyInfo.address}</p>
                                                     {previousClosure && (
                                                         <div>
-                                                            <p className='font-semibold'>Текущая цена - ${previousClosure.close}</p>
+                                                            <p className='font-semibold'>Текущая цена - ${previousClosure.close.toFixed(2)}</p>
                                                             <PurchaseForm previousClosure={previousClosure} />
                                                         </div> 
                                                     )}
@@ -128,7 +138,7 @@ export default function StockInfo() {
                                                     <div className='mr-10 text-lg w-3/12'>
                                                         {previousClosure && (
                                                             <div>
-                                                                <p className='font-semibold'>Текущая цена - ${previousClosure.close}</p>
+                                                                <p className='font-semibold'>Текущая цена - ${previousClosure.close.toFixed(2)}</p>
                                                                 <PurchaseForm previousClosure={previousClosure} />
                                                             </div>                                                         
                                                         )}

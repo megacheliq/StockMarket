@@ -20,7 +20,7 @@ export default function DefaultLayout() {
 
     return (
         <ThemeProvider>
-            <Outlet/>
+            <Outlet/> 
         </ThemeProvider>
     )
 }
