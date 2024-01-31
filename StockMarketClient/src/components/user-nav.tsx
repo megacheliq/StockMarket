@@ -61,9 +61,6 @@ export function UserNav() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                        Профиль
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={toggleTheme}>
                         Смена темы
                     </DropdownMenuItem>

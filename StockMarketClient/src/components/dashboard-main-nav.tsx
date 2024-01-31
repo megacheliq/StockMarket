@@ -23,16 +23,10 @@ export function MainNav({
         Портфель
       </Link>
       <Link
-        to="#"
+        to="history"
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        Информация
-      </Link>
-      <Link
-        to="#"
-        className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-      >
-        Настройки
+        История операций
       </Link>
     </nav>
   )

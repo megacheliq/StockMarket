@@ -196,6 +196,29 @@ class StockController extends Controller
             return response()->json(['error' => 'У вас еще не было сделок'], 424);
         }
     }
+
+    public function getOperations(Request $request) {
+        $email = $request->email;
+        $user = User::where('email', $email)->first();
+
+        $operations = Operation::where('user_id', $user->id)->get();
+
+        if ($operations->count() > 0) {
+            $transformedOperations = $operations->map(function ($operation) {
+                return [
+                    'operation_type' => $operation->operation_type === 'buy' ? 'Покупка' : 'Продажа',
+                    'stock_symbol' => Stock::where('id', $operation->stock_id)->first()->symbol,
+                    'amount' => $operation->amount,
+                    'total_price' => '$' . number_format($operation->amount * $operation->single_stock_price, 2, '.', ''),
+                    'date' => $operation->bought_at ?? $operation->sell_at
+                ];
+            });
+
+            return response()->json($transformedOperations);
+        } else {
+            return response()->json(['error' => 'У вас еще не было операций'], 424);
+        }
+    }
     
 
     private function addToPortfolio(Operation $operation) {

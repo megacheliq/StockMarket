@@ -7,7 +7,8 @@ import SignUp from "./views/SignUp";
 import DashBoard from "./views/DashBoard";
 import StockList from "./components/pages/stocklist";
 import StockInfo from "./components/pages/stockinfo";
-import Portfolio from "./components/pages/portfolioList";
+import Portfolio from "./components/pages/portfolioList"
+import HistoryList from "./components/pages/historylist";
 
 const router = createBrowserRouter([
     {
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
                     {
                         path: '/dashboard/portfolio',
                         element: <Portfolio/>
+                    },
+                    {
+                        path: '/dashboard/history',
+                        element: <HistoryList />
                     }
                 ]
             }
