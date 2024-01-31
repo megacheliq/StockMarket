@@ -3,13 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import axiosClient from '@/axios-client';
 import { useStateContext } from '@/contexts/ContextProvider'
 import { LoadingSpinner } from '../loading';
-
-interface Portfolio {
-    symbol: string,
-    amount: number,
-    all_stock_price: number,
-    last_updated: Date
-}
+import { SellForm } from '../forms/SellForm';
+import { Toaster } from "@/components/ui/sonner"
 
 export default function Portfolio() {
 
@@ -17,20 +12,24 @@ export default function Portfolio() {
     const [errorStatus, setErrorStatus] = useState<number | null>(null);
     const { user } = useStateContext();
 
-    useEffect(() => {
+    const fetchData = () => {
         axiosClient.get(`/getPortfolio/${user.email}`)
-            .then(response => {
-                setData(response.data);
-            })
-            .catch(error => {
-                setErrorStatus(error.response.status)
-            });
-
+          .then(response => {
+            setData(response.data);
+          })
+          .catch(error => {
+            setErrorStatus(error.response.status)
+          });
+    };
+    
+    useEffect(() => {
+        fetchData();
     }, []);
 
     return (
         <>
             <div className="w-full">
+                <Toaster />
                 <h2 className="text-3xl font-bold tracking-tight ml-8">Портфель</h2>
                 <div className="p-8">
                     {data || errorStatus ? (
@@ -51,13 +50,19 @@ export default function Portfolio() {
                                                 <div key={index} className='mb-4'>
                                                     <Card>
                                                         <CardHeader>
-                                                            <CardTitle className='text-xl'>{portfolioItem.symbol}</CardTitle>
+                                                            <CardTitle className='text-xl flex justify-between'>
+                                                                <div>{portfolioItem.symbol}</div>
+                                                                <div className='mr-20'>Продажа акций</div>
+                                                            </CardTitle>
                                                         </CardHeader>
-                                                        <CardContent className='text-lg'>
+                                                        <CardContent className='text-lg flex justify-between'>
                                                             <div>
                                                                 <p><span className='font-semibold'>Всего:</span> {portfolioItem.amount} штук</p>
                                                                 <p><span className='font-semibold'>Цена:</span> ${portfolioItem.all_stock_price}</p>
                                                                 <p><span className='font-semibold'>Последняя сделка:</span> {portfolioItem.last_updated.toString()}</p>
+                                                            </div>
+                                                            <div>
+                                                                <SellForm portfolio={portfolioItem} fetchData={fetchData}/>
                                                             </div>
                                                         </CardContent>
                                                     </Card>
@@ -71,7 +76,7 @@ export default function Portfolio() {
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>
-                                                У вас еще не было сделок, совершите хотя бы одну для доступа к портфелю
+                                                У вас на данный момент нет акций
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className='text-9xl pb-12'>

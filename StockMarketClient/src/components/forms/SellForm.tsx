@@ -35,8 +35,9 @@ import {
 import { toast } from "sonner"
 import { useStateContext } from '@/contexts/ContextProvider'
 
-interface PurchaseProps {
-    previousClosure: PreviousClosure
+interface SellProps {
+    portfolio: Portfolio;
+    fetchData: () => void;
 }
 
 const formSchema = z.object({
@@ -47,7 +48,7 @@ const formSchema = z.object({
         .positive({ message: 'Количество должно быть > 0' }),
 })
 
-export function PurchaseForm({ previousClosure }: PurchaseProps) {
+export function SellForm({ portfolio, fetchData }: SellProps) {
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -65,7 +66,7 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
     };
 
     const handleIncrease = () => {
-        if (amount < 100) {
+        if (amount < portfolio.amount) {
             setAmount(amount + 1);
         }
     };
@@ -76,25 +77,26 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
         if (inputValue === '' || isNaN(parseInt(inputValue))) {
             setAmount(1);
         } else {
-            setAmount(Math.max(1, Math.min(100, parseInt(inputValue, 10))));
+            setAmount(Math.max(1, Math.min(portfolio.amount, parseInt(inputValue, 10))));
         }
     };
 
     const [errors, setErrors] = useState(null)
-    const {user} = useStateContext()
+    const { user } = useStateContext()
 
     function onSubmit() {
         const payload = {
             user_email: user.email,
-            symbol: previousClosure.symbol,
+            symbol: portfolio.symbol,
             amount: amount,
-            single_stock_price: previousClosure.close.toFixed(2),
-            stock_from: previousClosure.from
-        }     
+            total_amount: portfolio.all_stock_price,
+            single_stock_price: portfolio.all_stock_price / portfolio.amount
+        }
 
-        axiosClient.post('/buyStock', payload)
+        axiosClient.post('/sellStock', payload)
             .then(({ data }) => {
                 toast(data.message);
+                fetchData();
             })
             .catch(err => {
                 toast('Произошла ошибка');
@@ -107,8 +109,7 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
     }
 
     return (
-        <div>
-            <p className='font-semibold mb-2 text-lg'>Покупка акций:</p>
+        <div className=''>
             <Form  {...form}>
                 <div className='space-y-4 w-full'>
                     <FormField
@@ -141,12 +142,12 @@ export function PurchaseForm({ previousClosure }: PurchaseProps) {
                     }
 
                     <AlertDialog>
-                        <AlertDialogTrigger className='w-full mt-3'><Button className='w-full'>${(amount * previousClosure.close).toFixed(2)}</Button></AlertDialogTrigger>
+                        <AlertDialogTrigger className='w-full mt-3'><Button className='w-full'>Продать</Button></AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Покупка {amount} акций {previousClosure.symbol} обойдется вам в ${(amount * previousClosure.close).toFixed(2)}
+                                    Продажа {amount} акций {portfolio.symbol} на сумму ${(amount * (portfolio.all_stock_price / portfolio.amount)).toFixed(2)}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

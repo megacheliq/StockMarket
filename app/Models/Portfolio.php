@@ -13,9 +13,11 @@ class Portfolio extends Model
 
     protected $fillable = [
         'user_id',
-        'symbol',
+        'stock_id',
         'amount',
         'all_stock_price',
         'last_updated'
     ];
+
+    public $timestamps = false;
 }

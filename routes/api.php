@@ -22,3 +22,4 @@ Route::get('/companyInfo/{symbol}', [StockController::class, 'getCompanyInfo']);
 Route::get('/getPortfolio/{email}', [StockController::class, 'getPortfolio']);
 
 Route::post('/buyStock', [StockController::class, 'buyStock']);
+Route::post('/sellStock', [StockController::class, 'sellStock']);

@@ -7,7 +7,7 @@ import SignUp from "./views/SignUp";
 import DashBoard from "./views/DashBoard";
 import StockList from "./components/pages/stocklist";
 import StockInfo from "./components/pages/stockinfo";
-import Portfolio from "./components/pages/portfolio";
+import Portfolio from "./components/pages/portfolioList";
 
 const router = createBrowserRouter([
     {

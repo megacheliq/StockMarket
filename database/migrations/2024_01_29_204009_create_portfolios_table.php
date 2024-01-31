@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('portfolios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->string('symbol');
+            $table->foreignId('stock_id')->constrained();
             $table->integer('amount');
             $table->double('all_stock_price');
             $table->date('last_updated');
-            $table->timestamps();
         });
     }
 

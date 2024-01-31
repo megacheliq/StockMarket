@@ -5,18 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Purchase extends Model
+class Operation extends Model
 {
     use HasFactory;
 
-    protected $table = 'purchases';
+    protected $table = 'operations';
 
     protected $fillable = [
         'user_id',
-        'symbol',
+        'stock_id',
+        'operation_type',
         'amount',
         'single_stock_price',
-        'stock_from',
         'bought_at',
+        'stock_from',
+        'sell_at',
     ];
+
+    public $timestamps = false;
+
 }

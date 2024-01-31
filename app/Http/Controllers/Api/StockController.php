@@ -4,14 +4,16 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseRequest;
+use App\Http\Requests\SellRequest;
 use App\Models\Portfolio;
-use App\Models\Purchase;
+use App\Models\Operation;
 use App\Models\User;
 use DateTime;
 use Illuminate\Http\Request;
 use App\Models\Stock;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
@@ -95,25 +97,79 @@ class StockController extends Controller
         }
     }
 
-    public function buyStock(PurchaseRequest $request) {
-        try {          
-            $data = $request->validated();
-            
-            $purchase = Purchase::create([
-                'user_id' => User::where('email', $data['user_email'])->first()->id,
-                'symbol' => $data['symbol'],
+    public function buyStock(PurchaseRequest $request) {    
+        $data = $request->validated();
+        
+        $user = User::where('email', $data['user_email'])->first();
+        $stock = Stock::where('symbol', $data['symbol'])->first();
+
+        if (!$user || !$stock) {
+            return response()->json(['error' => 'Пользователь или акция не найдены'], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $operation = Operation::create([
+                'operation_type' => 'buy',
+                'user_id' => $user->id,
+                'stock_id' => $stock->id,
                 'amount' => $data['amount'],
                 'single_stock_price' => $data['single_stock_price'],
                 'stock_from' => $data['stock_from'],
                 'bought_at' => now(),
             ]);
 
-            $this->addToPortfolio($purchase);
-    
-            return response()->json(["message" => "Вы успешно купили акции {$data['symbol']}"], 200);
-        } 
-        catch (\Exception $e) {
+            DB::commit();
+
+            $this->addToPortfolio($operation);
+            return response()->json(["message" => "Вы успешно купили акции {$data['symbol']} на $" . ($data['amount'] * $data['single_stock_price'])], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json(['error' => 'Произошла ошибка при выполнении покупки акций', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function sellStock(SellRequest $request) {
+        $data = $request->validated();
+
+        $user = User::where('email', $data['user_email'])->first();
+        $stock = Stock::where('symbol', $data['symbol'])->first();
+
+        if (!$user || !$stock) {
+            return response()->json(['error' => 'Пользователь или акция не найдены'], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $operation = Operation::create([
+                'operation_type' => 'sell',
+                'user_id' => $user->id,
+                'stock_id' => $stock->id,
+                'amount' => $data['amount'],
+                'single_stock_price' => $data['single_stock_price'],
+                'sell_at' => now(),
+            ]);
+
+            $portfolio = Portfolio::where('user_id', $user->id)->where('stock_id', $stock->id)->first();
+
+            if ($portfolio->amount == $data['amount']) {
+                $portfolio->delete();
+            } else {
+                $portfolio->amount -= $data['amount'];
+                $portfolio->all_stock_price -= ($data['amount'] * $data['single_stock_price']);
+                $portfolio->save();
+            }
+           
+            DB::commit();
+
+            return response()->json(["message" => "Вы успешно продали акции {$data['symbol']} на $" . ($data['amount'] * $data['single_stock_price'])], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['error' => 'Произошла ошибка при продаже акций', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -125,28 +181,38 @@ class StockController extends Controller
         $portfolios = Portfolio::where('user_id', $user->id)->get();
 
         if ($portfolios->count() > 0) {
-            return response()->json($portfolios);
+            $transformedPortfolios = $portfolios->map(function ($portfolio) {
+                return [
+                    'user_id' => $portfolio->user_id,
+                    'symbol' => Stock::where('id', $portfolio->stock_id)->first()->symbol,
+                    'amount' => $portfolio->amount,
+                    'all_stock_price' => $portfolio->all_stock_price,
+                    'last_updated' => $portfolio->last_updated,
+                ];
+            });
+        
+            return response()->json($transformedPortfolios);
         } else {
             return response()->json(['error' => 'У вас еще не было сделок'], 424);
         }
     }
     
 
-    private function addToPortfolio(Purchase $purchase) {
-        $previousPortfolio = Portfolio::where('symbol', $purchase->symbol)->where('user_id', $purchase->user_id)->first();
+    private function addToPortfolio(Operation $operation) {
+        $previousPortfolio = Portfolio::where('stock_id', $operation->stock_id)->where('user_id', $operation->user_id)->first();
 
         if ($previousPortfolio) {
-            $previousPortfolio->amount += $purchase->amount;
-            $previousPortfolio->all_stock_price += $purchase->amount * $purchase->single_stock_price;
-            $previousPortfolio->last_updated = $purchase->stock_from;
+            $previousPortfolio->amount += $operation->amount;
+            $previousPortfolio->all_stock_price += $operation->amount * $operation->single_stock_price;
+            $previousPortfolio->last_updated = $operation->stock_from;
             $previousPortfolio->save();
         } else {
             Portfolio::create([
-                'user_id' => $purchase->user_id,
-                'symbol' => $purchase->symbol,
-                'amount' => $purchase->amount,
-                'all_stock_price' => $purchase->amount * $purchase->single_stock_price,
-                'last_updated' => $purchase->stock_from,
+                'user_id' => $operation->user_id,
+                'stock_id' => $operation->stock_id,
+                'amount' => $operation->amount,
+                'all_stock_price' => $operation->amount * $operation->single_stock_price,
+                'last_updated' => $operation->stock_from,
             ]);
         }           
     }
